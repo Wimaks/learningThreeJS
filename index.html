@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>MDN Games: Three.js demo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <script type="module">
+        import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r132/build/three.module.js';
+
+        function main() {
+            const canvas = document.querySelector('#c');
+            const renderer = new THREE.WebGLRenderer({
+                canvas
+            });
+
+            // камера
+            const fov = 75;
+            const aspect = 2; // Холст по умолчанию
+            const near = 0.1;
+            const far = 5;
+            const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.z = 2;
+
+            const scene = new THREE.Scene();
+            
+            // свет
+
+            const color = 0xFFFFFF;
+            const intencity = 1;
+            const light = new THREE.DirectionalLight(color, intencity);
+            light.position.set(-1, 2, 4); // x, y, z
+            scene.add(light);
+            
+            // размеры куба
+            const boxWidth = 0.7;
+            const boxHeight = 0.7;
+            const boxDepth = 0.7;
+            const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+            // функция создающая куб
+            function makeInstance(geometry, color, x) {
+                const material = new THREE.MeshPhongMaterial({color}); // мэш материал, зависимый от света
+
+                const cube = new THREE.Mesh(geometry, material);
+                scene.add(cube);
+
+                cube.position.x = x;
+
+                return cube;
+            }
+            
+            const cubes = [
+                makeInstance(geometry, 0x44aa88, 0),
+                makeInstance(geometry, 0x8844aa, -2),
+                makeInstance(geometry, 0xaa8844, 2),
+            ];
+            
+            function resizeRendererToDisplaySize(renderer) {
+                const canvas = renderer.domElement;
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                const needResize = canvas.width !== width || canvas.height !== height;
+                if (needResize) {
+                    renderer.setSize(width, height, false);
+                }
+                return needResize;
+            }
+
+            //функция рендеринга
+
+            function render(time) {
+                time *= 0.001; // конвертируем время в секунды
+
+                if (resizeRendererToDisplaySize(renderer)) {
+                    const canvas = renderer.domElement;
+                    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                    camera.updateProjectionMatrix();
+                }
+
+                cubes.forEach((cube, ndx) => {
+                    const speed = 1 + ndx * 0.1;
+                    const rot = time * speed;
+                    cube.rotation.x = rot;
+                    cube.rotation.y = rot;
+                })
+                
+
+                renderer.render(scene, camera); // отрисовка всего на холсте
+
+                requestAnimationFrame(render);
+            }
+            
+            requestAnimationFrame(render);
+
+        }
+
+        main();
+    </script>
+    <!-- <script src="/js/script.js"></script> -->
+</body>
+
+</html>
